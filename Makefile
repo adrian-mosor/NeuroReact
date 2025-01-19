@@ -4,7 +4,7 @@
 PROJECT = NeuroReact
 TARGET ?= src/rectangle.py
 TARGET_TEST ?= src/rectangle.py
-MAIN_BRANCH ?= main
+MAIN_BRANCH ?= develop
 
 # IP address of Raspberry PI (only static support)
 REMOTE_PI_IP = 192.168.1.137
