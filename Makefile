@@ -11,7 +11,7 @@ REMOTE_PI_IP = 192.168.1.137
 
 # Remote user and pwd paths
 REMOTE_PI_USER = amosor
-REMOTE_PI_PWD = data/$(PROJECT)/$(PROJECT)
+REMOTE_PI_PWD = /home/amosor/data/$(PROJECT)/$(PROJECT)
 
 # Sync with repository
 .PHONY: update, run, all, run_remote, end_remote
