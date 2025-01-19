@@ -25,7 +25,7 @@ run:
 # Run outside of the remote
 # Allow forcefully usage of interactive session when running remotely 
 run_remote:
-	ssh -t $(REMOTE_PI_USER)@$(REMOTE_PI_IP) 'cd $(REMOTE_PI_PWD) && make all'
+	ssh -t $(REMOTE_PI_USER)@$(REMOTE_PI_IP) 'cd $(REMOTE_PI_PWD) && make run'
 
 # Update and run
 all: update run_remote
