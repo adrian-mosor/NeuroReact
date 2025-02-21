@@ -4,6 +4,8 @@ import time
 import sys
 import subprocess
 
+results = []  # Stores (sequence_name, red_press_count)
+
 def return_to_main_menu():
     print("Returning to main menu...")
     pygame.quit()
@@ -89,10 +91,13 @@ def display_message(text, bg_color, text_color, duration):
     time.sleep(duration)
 
 def run_sequence(sequence_name, reaction_time, num_squares=4):
-    # Randomly select 10 out of 12 rounds to have red
+    # Randomly select 10 out of 12 rounds where RED appears
     rounds_with_red = random.sample(range(iterations_per_sequence), 10)
 
     COLOR_POOL = [BLUE, GREEN, PURPLE, ORANGE, CYAN, YELLOW, PINK, WHITE, GRAY, BROWN, TEAL]
+    
+    # Track red presses
+    red_press_count = 0
 
     # Choose squares based on sequence type
     squares = squares_4 if num_squares == 4 else squares_8
@@ -129,6 +134,11 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
                         if square.collidepoint(x, y):
                             reaction_time_taken = time.time() - reaction_start_time
                             reaction_times.append(reaction_time_taken)
+                            
+                            # If this iteration had RED and user clicked it, count it
+                            if iteration in rounds_with_red and available_colors[i] == RED:
+                                red_press_count += 1
+
                             print(f"{sequence_name} - Iteration {iteration + 1}: Reaction Time: {reaction_time_taken:.3f} sec (Red: {iteration in rounds_with_red})")
                             user_pressed = True
                             break
@@ -140,8 +150,47 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
         pygame.display.flip()
         time.sleep(2)
 
-display_message("Game I:\nTouch this RED color\nas quickly and precisely as possible", RED, BLACK, 5)
+    # Store results for the sequence
+    results.append((sequence_name, red_press_count))
 
+def display_results_table():
+    screen.fill(WHITE)
+    font = pygame.font.Font(None, 40)
+
+    # Table Title
+    title_text = font.render("Game I – Results", True, BLACK)
+    screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+
+    # Column Headers
+    headers = ["", "Nominal", "%"]
+    header_x_positions = [100, 300, 500]
+    for i, header in enumerate(headers):
+        text_surface = font.render(header, True, BLACK)
+        screen.blit(text_surface, (header_x_positions[i], 100))
+
+    # Display Sequence Results
+    for idx, (sequence_name, red_count) in enumerate(results):
+        row_y = 150 + (idx * 50)
+        
+        # Sequence name
+        seq_text = font.render(sequence_name, True, BLACK)
+        screen.blit(seq_text, (100, row_y))
+
+        # Nominal (x/10)
+        nominal_text = font.render(f"{red_count} from 10", True, BLACK)
+        screen.blit(nominal_text, (300, row_y))
+
+        # Percentage
+        percent = (red_count / 10) * 100
+        percent_text = font.render(f"{percent:.1f}%", True, BLACK)
+        screen.blit(percent_text, (500, row_y))
+
+    pygame.display.flip()
+    # Display results for 10 seconds before returning to the menu
+    time.sleep(10)
+
+# Main program running
+display_message("Game I:\nTouch this RED color\nas quickly and precisely as possible", RED, BLACK, 5)
 run_sequence("Sequence 1", reaction_time=1)
 display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 2", reaction_time=0.5)
@@ -150,6 +199,7 @@ run_sequence("Sequence 3", reaction_time=1, num_squares=8)
 display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 4", reaction_time=0.5, num_squares=8)
 display_message("END GAME", RED, BLACK, 2)
+display_results_table()
 
 # Instead of quitting, go back to main-menu
 return_to_main_menu()
