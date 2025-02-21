@@ -113,6 +113,9 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
 
         random.shuffle(available_colors)  # Randomize order
 
+        # Track which square actually has RED
+        red_square_index = available_colors.index(RED) if RED in available_colors else None
+
         screen.fill(BLACK)  # Clear screen
         for i, square in enumerate(squares):
             pygame.draw.rect(screen, available_colors[i], square)
@@ -134,12 +137,12 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
                         if square.collidepoint(x, y):
                             reaction_time_taken = time.time() - reaction_start_time
                             reaction_times.append(reaction_time_taken)
-                            
-                            # If this iteration had RED and user clicked it, count it
-                            if iteration in rounds_with_red and available_colors[i] == RED:
+
+                            # Check if user clicked the ACTUAL RED square
+                            if red_square_index is not None and i == red_square_index:
                                 red_press_count += 1
 
-                            print(f"{sequence_name} - Iteration {iteration + 1}: Reaction Time: {reaction_time_taken:.3f} sec (Red: {iteration in rounds_with_red})")
+                            print(f"{sequence_name} - Iteration {iteration + 1}: Reaction Time: {reaction_time_taken:.3f} sec (Clicked Red: {i == red_square_index})")
                             user_pressed = True
                             break
                 if user_pressed:
@@ -152,6 +155,7 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
 
     # Store results for the sequence
     results.append((sequence_name, red_press_count))
+
 
 def display_results_table():
     screen.fill(WHITE)
