@@ -99,22 +99,16 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
     square_count = len(squares)
 
     for iteration in range(iterations_per_sequence):
-        if iteration in rounds_with_red:
-            # Ensure RED appears in this round
-            available_colors = [RED]
+        if iteration in rounds_with_red:  # Ensure RED appears in this round
+            available_colors = [RED]  # Start with RED
             remaining_colors = random.sample(COLOR_POOL, square_count - 1)
-
-            # Fill remaining squares
-            available_colors.extend(remaining_colors)
-        else:
-            # This round has no RED
+            available_colors.extend(remaining_colors)  # Fill remaining squares
+        else:  # This round has no RED
             available_colors = random.sample(COLOR_POOL, square_count)
 
-        # Randomize order for sequence
-        random.shuffle(available_colors)
+        random.shuffle(available_colors)  # Randomize order
 
-        # Randomize order
-        screen.fill(BLACK)
+        screen.fill(BLACK)  # Clear screen
         for i, square in enumerate(squares):
             pygame.draw.rect(screen, available_colors[i], square)
 
@@ -139,20 +133,23 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
                             user_pressed = True
                             break
                 if user_pressed:
-                    # Exit waiting loop immediately
-                    break
+                    break  # Exit waiting loop immediately
 
-        # Display "Next Level" after each iteration
-        display_message("Next Level", RED, BLACK, 2)
-
-    display_message("[DEBUG] Next Sequence", RED, BLACK, 1)
+        # Show black screen for 2 seconds between iterations
+        screen.fill(BLACK)
+        pygame.display.flip()
+        time.sleep(2)
 
 display_message("Game I:\nTouch this RED color\nas quickly and precisely as possible", RED, BLACK, 5)
 
 run_sequence("Sequence 1", reaction_time=1)
+display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 2", reaction_time=0.5)
+display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 3", reaction_time=1, num_squares=8)
+display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 4", reaction_time=0.5, num_squares=8)
+display_message("END GAME", RED, BLACK, 2)
 
 # Instead of quitting, go back to main-menu
 return_to_main_menu()
