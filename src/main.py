@@ -93,9 +93,8 @@ while running:
                 # Launch game1.py and store its process
                 game_process = subprocess.Popen(["python3", "game1.py"])
 
-                # Wait for game1.py to start before exiting main menu
-                time.sleep(1)
-                running = False  # Close main menu
+                # Wait for game1.py to finish before allowing main.py to exit
+                game_process.wait()
 
             elif exit_button_rect.collidepoint(x, y):
                 handle_exit(None, None)
