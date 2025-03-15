@@ -84,14 +84,12 @@ while running:
                 pygame.display.update()
                 
                 # Launch game asynchronously and keep loading screen until it starts
-                game_process = subprocess.Popen(["python3", "game1.py"])
+                # Launch game asynchronously and immediately return to menu
+                subprocess.Popen(["python3", "game1.py"], start_new_session=True)
                 
-                # Wait until the game process is running
-                while game_process.poll() is None:  # While the game is running
-                    time.sleep(0.5)  # Wait before checking again
-
-                # Quit only after game1.py has fully launched
-                running = False
+                # Exit the main menu immediately after launching game1.py
+                pygame.quit()
+                os._exit(0)  # Ensure the script terminates
 
             elif exit_button_rect.collidepoint(x, y):
                 handle_exit(None, None)
