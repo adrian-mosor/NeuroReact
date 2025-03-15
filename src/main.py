@@ -49,15 +49,17 @@ def show_loading_screen():
 # Track the subprocess
 game_process = None
 
-# Function to handle Ctrl+C
+# Function to handle Ctrl+C and cleanly exit both processes
 def handle_exit(sig, frame):
-    print("\nExiting application...")
     global game_process
-    if game_process:
-        game_process.terminate()  # Kill game1.py
-        game_process.wait()  # Ensure it exits
+    print("\nExiting application...")
+    
+    if game_process and game_process.poll() is None:
+        game_process.terminate()  # Kill game1.py if it's running
+        game_process.wait()  # Ensure it fully stops
+    
     pygame.quit()
-    os._exit(0)  # Fully terminate the script
+    sys.exit(0)  # Fully terminate
 
 # Allow Ctrl+C to work
 signal.signal(signal.SIGINT, handle_exit)
@@ -90,11 +92,8 @@ while running:
                 show_loading_screen()
                 pygame.display.update()
 
-                # Launch game1.py and store its process
+                # Launch game1.py as a separate process in the background
                 game_process = subprocess.Popen(["python3", "game1.py"])
-
-                # Wait for game1.py to finish before allowing main.py to exit
-                game_process.wait()
 
             elif exit_button_rect.collidepoint(x, y):
                 handle_exit(None, None)
