@@ -88,10 +88,6 @@ while running:
             if start_button_rect.collidepoint(x, y):
                 print("Launching Game 1...")
 
-                # Show loading screen
-                show_loading_screen()
-                pygame.display.update()
-
                 # Launch game1.py as a separate process in the background
                 game_process = subprocess.Popen(["python3", "game1.py"], stdin=None, stdout=None, stderr=None, close_fds=True)
 
