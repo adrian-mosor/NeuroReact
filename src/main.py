@@ -1,9 +1,9 @@
 import os
+import signal
 import pygame
 import subprocess
 import sys
 import time
-import signal
 
 # Initialize Pygame
 pygame.init()
@@ -19,13 +19,12 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 DARK_RED = (139, 0, 0)
-GRAY = (169, 169, 169)
 
 # Define button dimensions
 button_width = 400
 button_height = 100
 button_x = (SCREEN_WIDTH - button_width) // 2
-button_y_start = (SCREEN_HEIGHT // 2) - 60  # Adjusted for two buttons
+button_y_start = (SCREEN_HEIGHT // 2) - 60
 button_y_exit = (SCREEN_HEIGHT // 2) + 60
 
 # Define buttons
@@ -47,18 +46,26 @@ def show_loading_screen():
     draw_text("Loading...", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, BLACK)
     pygame.display.flip()
 
-# Allow CTRL+C to work
+# Track the subprocess
+game_process = None
+
+# Function to handle Ctrl+C
 def handle_exit(sig, frame):
     print("\nExiting application...")
+    global game_process
+    if game_process:
+        game_process.terminate()  # Kill game1.py
+        game_process.wait()  # Ensure it exits
     pygame.quit()
-    os._exit(0)  # Ensures the process fully terminates
+    os._exit(0)  # Fully terminate the script
 
-signal.signal(signal.SIGINT, handle_exit)  # Enable CTRL+C exit
+# Allow Ctrl+C to work
+signal.signal(signal.SIGINT, handle_exit)
 
 # Main loop
 running = True
 while running:
-    screen.fill(WHITE)  # Background color
+    screen.fill(WHITE)
 
     # Draw buttons
     pygame.draw.rect(screen, RED, start_button_rect)
@@ -73,23 +80,22 @@ while running:
     # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            handle_exit(None, None)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
             if start_button_rect.collidepoint(x, y):
                 print("Launching Game 1...")
-                
+
                 # Show loading screen
                 show_loading_screen()
                 pygame.display.update()
-                
-                # Launch game asynchronously and keep loading screen until it starts
-                # Launch game asynchronously and immediately return to menu
-                subprocess.Popen(["python3", "game1.py"], start_new_session=True)
-                
-                # Exit the main menu immediately after launching game1.py
-                pygame.quit()
-                os._exit(0)  # Ensure the script terminates
+
+                # Launch game1.py and store its process
+                game_process = subprocess.Popen(["python3", "game1.py"])
+
+                # Wait for game1.py to start before exiting main menu
+                time.sleep(1)
+                running = False  # Close main menu
 
             elif exit_button_rect.collidepoint(x, y):
                 handle_exit(None, None)
