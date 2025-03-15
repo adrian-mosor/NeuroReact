@@ -60,8 +60,8 @@ while running:
     screen.fill(WHITE)  # Background color
 
     # Draw buttons
-    pygame.draw.rect(screen, RED, start_button_rect, border_radius=10)
-    pygame.draw.rect(screen, DARK_RED, exit_button_rect, border_radius=10)
+    pygame.draw.rect(screen, RED, start_button_rect)
+    pygame.draw.rect(screen, DARK_RED, exit_button_rect)
 
     # Draw text
     draw_text("Start Game 1", SCREEN_WIDTH // 2, button_y_start + button_height // 2, BLACK)
