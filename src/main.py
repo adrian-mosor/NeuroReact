@@ -1,3 +1,4 @@
+import os
 import pygame
 import subprocess
 import sys
@@ -50,7 +51,7 @@ def show_loading_screen():
 def handle_exit(sig, frame):
     print("\nExiting application...")
     pygame.quit()
-    sys.exit(0)
+    os._exit(0)  # Ensures the process fully terminates
 
 signal.signal(signal.SIGINT, handle_exit)  # Enable CTRL+C exit
 
