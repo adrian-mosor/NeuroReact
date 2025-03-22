@@ -30,13 +30,11 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
-CYAN = (0, 255, 255)
 YELLOW = (255, 255, 0)
 PINK = (255, 105, 180)
 WHITE = (255, 255, 255)
 GRAY = (169, 169, 169)
 BROWN = (165, 42, 42)
-TEAL = (0, 128, 128)
 
 # Define square positions for 4 squares (first two sequences of the game - seq. 1,2)
 square_width_4 = SCREEN_WIDTH // 2
@@ -94,7 +92,7 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
     # Randomly select 10 out of 12 rounds where RED appears
     rounds_with_red = random.sample(range(iterations_per_sequence), 10)
 
-    COLOR_POOL = [BLUE, GREEN, PURPLE, ORANGE, CYAN, YELLOW, PINK, WHITE, GRAY, BROWN, TEAL]
+    COLOR_POOL = [BLUE, GREEN, PURPLE, ORANGE, YELLOW, PINK, WHITE, GRAY, BROWN]
     
     # Track red presses
     red_press_count = 0

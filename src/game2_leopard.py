@@ -117,6 +117,8 @@ def run_sequence(sequence_name, reaction_time, num_squares):
             print(f"{sequence_name} - Iteration {iteration + 1}: Correct!")
         elif GREEN in available_colors:
             print(f"{sequence_name} - Iteration {iteration + 1}: Incorrect!")
+        elif GREEN not in available_colors:
+            print(f"{sequence_name} - Iteration {iteration + 1}: Green was not in iteration")
 
         # Black screen for 2 seconds between iterations
         screen.fill(BLACK)

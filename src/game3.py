@@ -34,7 +34,7 @@ PINK = (255, 105, 180)
 GRAY = (169, 169, 169)
 BROWN = (165, 42, 42)
 
-# Color list for random selection (Removed TEAL and CYAN)
+# Color list for random selection
 COLOR_POOL = [RED, BLUE, GREEN, PURPLE, ORANGE, YELLOW, PINK, GRAY, BROWN]
 
 # Map colors to their spoken names
