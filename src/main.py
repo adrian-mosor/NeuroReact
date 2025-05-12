@@ -20,19 +20,27 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 DARK_RED = (139, 0, 0)
 
-# Define button dimensions
+# Define button dimensions and positions
 button_width = 400
-button_height = 80
+button_height = 70
 button_x = (SCREEN_WIDTH - button_width) // 2
 
-button_y_start_game1 = (SCREEN_HEIGHT // 2) - 120
-button_y_start_game3 = (SCREEN_HEIGHT // 2)  # Middle button
-button_y_exit = (SCREEN_HEIGHT // 2) + 120
+# Vertical spacing between buttons
+spacing = 20
+start_y = (SCREEN_HEIGHT - (5 * button_height + 4 * spacing)) // 2
+
+button_y_game1 = start_y
+button_y_game2 = button_y_game1 + button_height + spacing
+button_y_game3 = button_y_game2 + button_height + spacing
+button_y_game4 = button_y_game3 + button_height + spacing
+button_y_exit  = button_y_game4 + button_height + spacing
 
 # Define buttons
-start_game1_button_rect = pygame.Rect(button_x, button_y_start_game1, button_width, button_height)
-start_game3_button_rect = pygame.Rect(button_x, button_y_start_game3, button_width, button_height)
-exit_button_rect = pygame.Rect(button_x, button_y_exit, button_width, button_height)
+rect_game1 = pygame.Rect(button_x, button_y_game1, button_width, button_height)
+rect_game2 = pygame.Rect(button_x, button_y_game2, button_width, button_height)
+rect_game3 = pygame.Rect(button_x, button_y_game3, button_width, button_height)
+rect_game4 = pygame.Rect(button_x, button_y_game4, button_width, button_height)
+rect_exit  = pygame.Rect(button_x, button_y_exit,  button_width, button_height)
 
 # Font setup
 font = pygame.font.Font(None, 50)
@@ -43,36 +51,31 @@ def draw_text(text, x, y, color=BLACK):
     text_rect = text_surface.get_rect(center=(x, y))
     screen.blit(text_surface, text_rect)
 
-# Function to show loading screen before launching the game
+# Function to show loading screen
 def show_loading_screen():
     screen.fill(WHITE)
     draw_text("Loading...", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, BLACK)
     pygame.display.flip()
 
-# Track the subprocess
+# Track subprocess
 game_process = None
 
-# Function to handle Ctrl+C and cleanly exit both processes
+# Handle Ctrl+C
 def handle_exit(sig, frame):
     global game_process
     print("\nExiting application...")
-    
     if game_process and game_process.poll() is None:
-        game_process.terminate()  # Kill game*.py if it's running
-        game_process.wait()  # Ensure it fully stops
-    
+        game_process.terminate()
+        game_process.wait()
     pygame.quit()
-    sys.exit(0)  # Fully terminate
+    sys.exit(0)
 
-# Allow Ctrl+C to work
 signal.signal(signal.SIGINT, handle_exit)
 
-# Function to launch a game
+# Launch game
 def launch_game(game_script):
-    global game_process  # Ensure we modify the global variable
+    global game_process
     print(f"Launching {game_script}...")
-
-    # Keep main.py open while game runs
     game_process = subprocess.Popen(["python3", game_script], stdin=None, stdout=None, stderr=None, close_fds=True)
 
 # Main loop
@@ -81,30 +84,35 @@ while running:
     screen.fill(WHITE)
 
     # Draw buttons
-    pygame.draw.rect(screen, RED, start_game1_button_rect)
-    pygame.draw.rect(screen, RED, start_game3_button_rect)
-    pygame.draw.rect(screen, DARK_RED, exit_button_rect)
+    pygame.draw.rect(screen, RED, rect_game1)
+    pygame.draw.rect(screen, RED, rect_game2)
+    pygame.draw.rect(screen, RED, rect_game3)
+    pygame.draw.rect(screen, RED, rect_game4)
+    pygame.draw.rect(screen, DARK_RED, rect_exit)
 
-    # Draw text on buttons
-    draw_text("Start Game 1", SCREEN_WIDTH // 2, button_y_start_game1 + button_height // 2, BLACK)
-    draw_text("Start Game 2", SCREEN_WIDTH // 2, button_y_start_game1 + button_height // 2, BLACK)
-    draw_text("Start Game 3", SCREEN_WIDTH // 2, button_y_start_game3 + button_height // 2, BLACK)
-    draw_text("Start Game 4", SCREEN_WIDTH // 2, button_y_start_game3 + button_height // 2, BLACK)
-    draw_text("Exit", SCREEN_WIDTH // 2, button_y_exit + button_height // 2, WHITE)
+    # Button labels
+    draw_text("Start Game 1", SCREEN_WIDTH // 2, rect_game1.centery, BLACK)
+    draw_text("Start Game 2", SCREEN_WIDTH // 2, rect_game2.centery, BLACK)
+    draw_text("Start Game 3", SCREEN_WIDTH // 2, rect_game3.centery, BLACK)
+    draw_text("Start Game 4", SCREEN_WIDTH // 2, rect_game4.centery, BLACK)
+    draw_text("Exit",         SCREEN_WIDTH // 2, rect_exit.centery, WHITE)
 
     pygame.display.flip()
 
-    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             handle_exit(None, None)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
-            if start_game1_button_rect.collidepoint(x, y):
-                launch_game("game1.py")  # Start Game 1
-            elif start_game3_button_rect.collidepoint(x, y):
-                launch_game("game3.py")  # Start Game 3
-            elif exit_button_rect.collidepoint(x, y):
+            if rect_game1.collidepoint(x, y):
+                launch_game("game1.py")
+            elif rect_game2.collidepoint(x, y):
+                launch_game("game2_leopard.py")
+            elif rect_game3.collidepoint(x, y):
+                launch_game("game3.py")
+            elif rect_game4.collidepoint(x, y):
+                launch_game("game4.py")
+            elif rect_exit.collidepoint(x, y):
                 handle_exit(None, None)
 
 pygame.quit()
