@@ -87,7 +87,9 @@ while running:
 
     # Draw text on buttons
     draw_text("Start Game 1", SCREEN_WIDTH // 2, button_y_start_game1 + button_height // 2, BLACK)
-    draw_text("Start Game 3", SCREEN_WIDTH // 2, button_y_start_game3 + button_height // 2, WHITE)
+    draw_text("Start Game 2", SCREEN_WIDTH // 2, button_y_start_game1 + button_height // 2, BLACK)
+    draw_text("Start Game 3", SCREEN_WIDTH // 2, button_y_start_game3 + button_height // 2, BLACK)
+    draw_text("Start Game 4", SCREEN_WIDTH // 2, button_y_start_game3 + button_height // 2, BLACK)
     draw_text("Exit", SCREEN_WIDTH // 2, button_y_exit + button_height // 2, WHITE)
 
     pygame.display.flip()
