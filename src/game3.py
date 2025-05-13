@@ -3,6 +3,8 @@ import random
 import time
 import sys
 import subprocess
+import os
+import json
 
 def return_to_main_menu():
     print("Returning to main menu...")

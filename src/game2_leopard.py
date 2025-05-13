@@ -3,6 +3,8 @@ import random
 import time
 import subprocess
 import pvleopard
+import os
+import json
 
 # Initialize Pygame
 pygame.init()
