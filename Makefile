@@ -14,7 +14,7 @@ REMOTE_PI_USER = amosor
 REMOTE_PI_PWD = /home/amosor/data/$(PROJECT)/$(PROJECT)
 
 # Sync with repository
-.PHONY: update, run, all, run_remote, end_remote
+.PHONY: update, run, all, run_remote
 update:
 	@git pull
 	@git checkout $(MAIN_BRANCH)
