@@ -160,7 +160,7 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
 
 def display_results_table():
     screen.fill(WHITE)
-    font = pygame.font.Font(None, 30)
+    font = pygame.font.Font(None, 24)
 
     # Load saved data
     if os.path.exists(DATA_FILE):
@@ -174,7 +174,6 @@ def display_results_table():
         percent = (red_count / 10) * 100
         if sequence_name not in past_data:
             past_data[sequence_name] = {"previous": [], "best": 0.0}
-
         past_data[sequence_name]["previous"].insert(0, percent)
         past_data[sequence_name]["previous"] = past_data[sequence_name]["previous"][:3]
         past_data[sequence_name]["best"] = max(past_data[sequence_name]["best"], percent)
@@ -182,33 +181,33 @@ def display_results_table():
     with open(DATA_FILE, "w") as f:
         json.dump(past_data, f, indent=4)
 
-    # Draw table
-    headers = ["NOW", "", "PREVIOUS #1", "PREVIOUS #2", "PREVIOUS #3", "BEST PLAYER #1"]
-    x_positions = [30, 180, 330, 480, 630, 780]
+    # Headers
+    headers = ["NOW", "Nominal", "%", "PREV #1", "PREV #2", "PREV #3", "BEST"]
+    x_positions = [10, 120, 210, 290, 370, 450, 530]
 
     for i, header in enumerate(headers):
-        screen.blit(font.render(header, True, BLACK), (x_positions[i], 40))
+        screen.blit(font.render(header, True, BLACK), (x_positions[i], 30))
 
+    # Rows
     for idx, (sequence_name, red_count) in enumerate(results):
-        row_y = 90 + idx * 50
+        row_y = 70 + idx * 40
         percent = (red_count / 10) * 100
         prev = past_data[sequence_name]["previous"]
         best = past_data[sequence_name]["best"]
 
-        # NOW + nominal
         screen.blit(font.render(sequence_name, True, BLACK), (x_positions[0], row_y))
         screen.blit(font.render(f"{red_count} from 10", True, BLACK), (x_positions[1], row_y))
+        screen.blit(font.render(f"{percent:.1f}%", True, BLACK), (x_positions[2], row_y))
 
-        # Previous results
         for j in range(3):
-            value = f"{prev[j]:.1f}%" if j < len(prev) else "-"
-            screen.blit(font.render(value, True, BLACK), (x_positions[2 + j], row_y))
+            val = f"{prev[j]:.1f}%" if j < len(prev) else "-"
+            screen.blit(font.render(val, True, BLACK), (x_positions[3 + j], row_y))
 
-        # Best
-        screen.blit(font.render(f"{best:.1f}%", True, BLACK), (x_positions[5], row_y))
+        screen.blit(font.render(f"{best:.1f}%", True, BLACK), (x_positions[6], row_y))
 
     pygame.display.flip()
     time.sleep(10)
+
 
 # Main program running
 display_message("Game I:\nTouch this RED color\nas quickly and precisely as possible", RED, BLACK, 5)
