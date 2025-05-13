@@ -7,7 +7,7 @@ import json
 import os
 
 results = []  # Stores (sequence_name, red_press_count)
-DATA_FILE = "/home/amosor/data/scores/results_storage_game.json"
+DATA_FILE = "/home/amosor/data/scores/results_storage_game_1.json"
 
 def return_to_main_menu():
     print("Returning to main menu...")

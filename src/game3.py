@@ -75,6 +75,7 @@ squares_8 = [
 
 # Store results
 results = []
+DATA_FILE = "/home/amosor/data/scores/results_storage_game_3.json"
 
 # Function to play color sound
 def play_color(color):
@@ -180,27 +181,52 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
     # Store results
     results.append((sequence_name, correct_presses))
 
-# Function to display results table
 def display_results_table():
     screen.fill(WHITE)
-    font = pygame.font.Font(None, 40)
+    font = pygame.font.Font(None, 24)
 
-    # Display title
-    title_text = font.render("Game III – Results", True, BLACK)
-    screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+    # Load saved data
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            past_data = json.load(f)
+    else:
+        past_data = {}
 
-    # Display results per sequence
-    for idx, (sequence_name, correct_count) in enumerate(results):
-        row_y = 150 + (idx * 50)
+    # Update saved results
+    for sequence_name, red_count in results:
+        percent = (red_count / 10) * 100
+        if sequence_name not in past_data:
+            past_data[sequence_name] = {"previous": [], "best": 0.0}
+        past_data[sequence_name]["previous"].insert(0, percent)
+        past_data[sequence_name]["previous"] = past_data[sequence_name]["previous"][:3]
+        past_data[sequence_name]["best"] = max(past_data[sequence_name]["best"], percent)
 
-        seq_text = font.render(sequence_name, True, BLACK)
-        screen.blit(seq_text, (100, row_y))
+    with open(DATA_FILE, "w") as f:
+        json.dump(past_data, f, indent=4)
 
-        nominal_text = font.render(f"{correct_count} from 10", True, BLACK)
-        screen.blit(nominal_text, (300, row_y))
+    # Headers
+    headers = ["NOW", "Nominal", "%", "PREV #1", "PREV #2", "PREV #3", "BEST"]
+    x_positions = [10, 120, 210, 290, 370, 450, 530]
 
-        percent_text = font.render(f"{(correct_count / 10) * 100:.1f}%", True, BLACK)
-        screen.blit(percent_text, (500, row_y))
+    for i, header in enumerate(headers):
+        screen.blit(font.render(header, True, BLACK), (x_positions[i], 30))
+
+    # Rows
+    for idx, (sequence_name, red_count) in enumerate(results):
+        row_y = 70 + idx * 40
+        percent = (red_count / 10) * 100
+        prev = past_data[sequence_name]["previous"]
+        best = past_data[sequence_name]["best"]
+
+        screen.blit(font.render(sequence_name, True, BLACK), (x_positions[0], row_y))
+        screen.blit(font.render(f"{red_count} from 10", True, BLACK), (x_positions[1], row_y))
+        screen.blit(font.render(f"{percent:.1f}%", True, BLACK), (x_positions[2], row_y))
+
+        for j in range(3):
+            val = f"{prev[j]:.1f}%" if j < len(prev) else "-"
+            screen.blit(font.render(val, True, BLACK), (x_positions[3 + j], row_y))
+
+        screen.blit(font.render(f"{best:.1f}%", True, BLACK), (x_positions[6], row_y))
 
     pygame.display.flip()
     time.sleep(10)
