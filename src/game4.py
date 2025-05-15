@@ -114,8 +114,6 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
     square_count = len(squares)
 
     for iteration in range(iterations):
-        screen.fill(BLACK)
-
         if iteration in scoreable_indices:
             is_dark = iteration in dark_red_indices
             valid_color = DARK_RED if is_dark else LIGHT_RED
@@ -127,6 +125,7 @@ def run_sequence(sequence_name, reaction_time, num_squares=4):
 
         random.shuffle(colors)
 
+        screen.fill(BLACK) # Clear screen
         for i in range(square_count):
             pygame.draw.rect(screen, colors[i], squares[i])
         pygame.display.flip()
@@ -222,11 +221,11 @@ def display_results_table():
 # Run Game IV
 display_message("Game IV:\nPress SOFT for LIGHT RED\nPress HARD for DARK RED", RED, BLACK, 5)
 run_sequence("Sequence 1", 1, num_squares=4)
-display_message("Next Level", WHITE, BLACK, 2)
+display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 2", 0.5, num_squares=4)
-display_message("Next Level", WHITE, BLACK, 2)
+display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 3", 1, num_squares=8)
-display_message("Next Level", WHITE, BLACK, 2)
+display_message("Next Level", RED, BLACK, 2)
 run_sequence("Sequence 4", 0.5, num_squares=8)
 display_message("END GAME", RED, BLACK, 2)
 display_results_table()
