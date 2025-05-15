@@ -2,77 +2,82 @@ import pygame
 import random
 import time
 import serial
-import os
+import subprocess
 import json
+import os
+import sys
+
+# Game result storage
+results = []
+DATA_FILE = "/home/amosor/data/scores/results_storage_game_4.json"
+
+# Setup serial connection to ESP8266
+ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
 
 # Initialize Pygame
 pygame.init()
 
-# Screen settings
+# Screen dimensions for the Raspberry Pi 7-inch touchscreen
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 460
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
-pygame.display.set_caption("Game IV - Pressure Sensor")
+pygame.display.set_caption("Game IV – Pressure Sensor")
 
 # Define colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+PURPLE = (128, 0, 128)
+ORANGE = (255, 165, 0)
+YELLOW = (255, 255, 0)
+PINK = (255, 105, 180)
+GRAY = (169, 169, 169)
+BROWN = (165, 42, 42)
 LIGHT_RED = (255, 102, 102)
 DARK_RED = (153, 0, 0)
-
-# Define serial port and baud rate for NodeMCU
-ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+COLOR_POOL = [RED, BLUE, GREEN, PURPLE, ORANGE, YELLOW, PINK, GRAY, BROWN]
 
 # Pressure thresholds
 SOFT_PRESS_MIN = 40
 SOFT_PRESS_MAX = 100
 HARD_PRESS_MIN = 101
 
-# Define square positions for 4 squares (first two sequences of the game - seq. 1,2)
+# Squares for 4 and 8 modes
 square_width_4 = SCREEN_WIDTH // 2
 square_height_4 = SCREEN_HEIGHT // 2
 squares_4 = [
-    pygame.Rect(0, 0, square_width_4, square_height_4),  # Top-left
-    pygame.Rect(square_width_4, 0, square_width_4, square_height_4),  # Top-right
-    pygame.Rect(0, square_height_4, square_width_4, square_height_4),  # Bottom-left
-    pygame.Rect(square_width_4, square_height_4, square_width_4, square_height_4),  # Bottom-right
+    pygame.Rect(0, 0, square_width_4, square_height_4),
+    pygame.Rect(square_width_4, 0, square_width_4, square_height_4),
+    pygame.Rect(0, square_height_4, square_width_4, square_height_4),
+    pygame.Rect(square_width_4, square_height_4, square_width_4, square_height_4)
 ]
 
-# Define square positions for 8 squares (last two sequences of the game - seq. 3,4)
 square_width_8 = SCREEN_WIDTH // 4
 square_height_8 = SCREEN_HEIGHT // 2
-squares_8 = [
-    pygame.Rect(0, 0, square_width_8, square_height_8),  # Top-left 1
-    pygame.Rect(square_width_8, 0, square_width_8, square_height_8),  # Top-left 2
-    pygame.Rect(square_width_8 * 2, 0, square_width_8, square_height_8),  # Top-right 1
-    pygame.Rect(square_width_8 * 3, 0, square_width_8, square_height_8),  # Top-right 2
-    pygame.Rect(0, square_height_8, square_width_8, square_height_8),  # Bottom-left 1
-    pygame.Rect(square_width_8, square_height_8, square_width_8, square_height_8),  # Bottom-left 2
-    pygame.Rect(square_width_8 * 2, square_height_8, square_width_8, square_height_8),  # Bottom-right 1
-    pygame.Rect(square_width_8 * 3, square_height_8, square_width_8, square_height_8),  # Bottom-right 2
-]
+squares_8 = [pygame.Rect(x * square_width_8, y * square_height_8, square_width_8, square_height_8)
+             for y in range(2) for x in range(4)]
 
-# Define sequences
-sequences = ["Sequence 1", "Sequence 2", "Sequence 3", "Sequence 4"]
-results = []
-DATA_FILE = "/home/amosor/data/scores/results_storage_game_4.json"
+# Return to main menu
+def return_to_main_menu():
+    print("Returning to main menu...")
+    pygame.quit()
+    subprocess.run(["python3", "main.py"])
+    sys.exit()
 
-# Function to display messages
 def display_message(text, bg_color, text_color, duration):
     screen.fill(bg_color)
     font = pygame.font.Font(None, 50)
     lines = text.split("\n")
     y_offset = SCREEN_HEIGHT // 2 - (len(lines) * 25)
-
     for i, line in enumerate(lines):
         text_surface = font.render(line, True, text_color)
         text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, y_offset + i * 50))
         screen.blit(text_surface, text_rect)
-
     pygame.display.flip()
     time.sleep(duration)
 
-# Function to get a pressure reading from serial
 def read_pressure():
     try:
         line = ser.readline().decode().strip()
@@ -80,65 +85,69 @@ def read_pressure():
     except:
         return 0
 
-# Function to run a sequence
 def run_sequence(sequence_name, reaction_time, num_squares=4):
     correct = 0
+    iterations = 12
+    scoreable_indices = sorted(random.sample(range(iterations), 10))
+    dark_red_indices = set(random.sample(scoreable_indices, 5))
+
     squares = squares_4 if num_squares == 4 else squares_8
+    square_count = len(squares)
 
-    challenge_indices = sorted(random.sample(range(12), 10))
-    dark_red_indices = set(random.sample(challenge_indices, k=5))
+    for iteration in range(iterations):
+        screen.fill(BLACK)
 
-    for iteration in range(12):
-        if iteration in challenge_indices:
+        if iteration in scoreable_indices:
             is_dark = iteration in dark_red_indices
-            target_color = DARK_RED if is_dark else LIGHT_RED
+            valid_color = DARK_RED if is_dark else LIGHT_RED
+            other_colors = random.sample(COLOR_POOL, square_count - 1)
+            colors = [valid_color] + other_colors
         else:
             is_dark = None
-            target_color = BLACK
+            colors = random.sample(COLOR_POOL, square_count)
 
-        screen.fill(target_color)
+        random.shuffle(colors)
+
+        for i in range(square_count):
+            pygame.draw.rect(screen, colors[i], squares[i])
         pygame.display.flip()
 
-        start_time = time.time()
+        start = time.time()
         responded = False
 
-        while time.time() - start_time < reaction_time:
+        while time.time() - start < reaction_time:
             pressure = read_pressure()
             if pressure:
                 if is_dark is True and pressure > HARD_PRESS_MIN:
                     correct += 1
-                    print(f"{sequence_name} - Iter {iteration+1}: DARK_RED, PRESS={pressure} - Correct")
+                    print(f"{sequence_name} - Iter {iteration+1}: DARK_RED, PRESS={pressure} ✓")
                     responded = True
                     break
                 elif is_dark is False and SOFT_PRESS_MIN <= pressure <= SOFT_PRESS_MAX:
                     correct += 1
-                    print(f"{sequence_name} - Iter {iteration+1}: LIGHT_RED, PRESS={pressure} - Correct")
+                    print(f"{sequence_name} - Iter {iteration+1}: LIGHT_RED, PRESS={pressure} ✓")
                     responded = True
                     break
                 elif is_dark is not None:
-                    # Wrong pressure but color was valid
-                    print(f"{sequence_name} - Iter {iteration+1}: Wrong PRESS={pressure} for {'DARK_RED' if is_dark else 'LIGHT_RED'}")
-                    responded = True  # Still counts as a response, just incorrect
+                    print(f"{sequence_name} - Iter {iteration+1}: Wrong PRESS={pressure}")
+                    responded = True
                     break
                 else:
-                    # Color was BLACK or invalid, this iteration is not scorable
                     print(f"{sequence_name} - Iter {iteration+1}: PRESS={pressure} ignored (No valid RED color shown)")
                     responded = True
                     break
 
         if not responded:
             if is_dark is not None:
-                print(f"{sequence_name} - Iter {iteration+1}: No input - Missed opportunity for {'DARK_RED' if is_dark else 'LIGHT_RED'}")
+                print(f"{sequence_name} - Iter {iteration+1}: MISSED - Color was {'DARK_RED' if is_dark else 'LIGHT_RED'}")
             else:
                 print(f"{sequence_name} - Iter {iteration+1}: (SKIPPED) No DARK_RED or LIGHT_RED shown")
-
 
         screen.fill(BLACK)
         pygame.display.flip()
         time.sleep(2)
 
     results.append((sequence_name, correct))
-
 
 def display_results_table():
     screen.fill(WHITE)
@@ -190,16 +199,16 @@ def display_results_table():
     pygame.display.flip()
     time.sleep(10)
 
-# Run the game
+
+# Run Game IV
 display_message("Game IV:\nPress SOFT for LIGHT RED\nPress HARD for DARK RED", WHITE, BLACK, 5)
-run_sequence("Sequence 1", 1)
+run_sequence("Sequence 1", 1, num_squares=4)
 display_message("Next Level", WHITE, BLACK, 2)
-run_sequence("Sequence 2", 0.5)
+run_sequence("Sequence 2", 0.5, num_squares=4)
 display_message("Next Level", WHITE, BLACK, 2)
-run_sequence("Sequence 3", 1)
+run_sequence("Sequence 3", 1, num_squares=8)
 display_message("Next Level", WHITE, BLACK, 2)
-run_sequence("Sequence 4", 0.5)
+run_sequence("Sequence 4", 0.5, num_squares=8)
 display_message("END GAME", WHITE, BLACK, 2)
 display_results_table()
-pygame.quit()
-
+return_to_main_menu()
