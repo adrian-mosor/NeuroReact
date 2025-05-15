@@ -14,6 +14,13 @@ DATA_FILE = "/home/amosor/data/scores/results_storage_game_4.json"
 # Setup serial connection to ESP8266
 ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
 
+# Return to main menu
+def return_to_main_menu():
+    print("Returning to main menu...")
+    pygame.quit()
+    subprocess.run(["python3", "main.py"])
+    sys.exit()
+
 # Initialize Pygame
 pygame.init()
 
@@ -44,37 +51,49 @@ SOFT_PRESS_MIN = 40
 SOFT_PRESS_MAX = 100
 HARD_PRESS_MIN = 101
 
-# Squares for 4 and 8 modes
+# Define square positions for 4 squares (first two sequences of the game - seq. 1,2)
 square_width_4 = SCREEN_WIDTH // 2
 square_height_4 = SCREEN_HEIGHT // 2
 squares_4 = [
-    pygame.Rect(0, 0, square_width_4, square_height_4),
-    pygame.Rect(square_width_4, 0, square_width_4, square_height_4),
-    pygame.Rect(0, square_height_4, square_width_4, square_height_4),
-    pygame.Rect(square_width_4, square_height_4, square_width_4, square_height_4)
+    pygame.Rect(0, 0, square_width_4, square_height_4),  # Top-left
+    pygame.Rect(square_width_4, 0, square_width_4, square_height_4),  # Top-right
+    pygame.Rect(0, square_height_4, square_width_4, square_height_4),  # Bottom-left
+    pygame.Rect(square_width_4, square_height_4, square_width_4, square_height_4),  # Bottom-right
 ]
 
+# Define square positions for 8 squares (last two sequences of the game - seq. 3,4)
 square_width_8 = SCREEN_WIDTH // 4
 square_height_8 = SCREEN_HEIGHT // 2
-squares_8 = [pygame.Rect(x * square_width_8, y * square_height_8, square_width_8, square_height_8)
-             for y in range(2) for x in range(4)]
+squares_8 = [
+    pygame.Rect(0, 0, square_width_8, square_height_8),  # Top-left 1
+    pygame.Rect(square_width_8, 0, square_width_8, square_height_8),  # Top-left 2
+    pygame.Rect(square_width_8 * 2, 0, square_width_8, square_height_8),  # Top-right 1
+    pygame.Rect(square_width_8 * 3, 0, square_width_8, square_height_8),  # Top-right 2
+    pygame.Rect(0, square_height_8, square_width_8, square_height_8),  # Bottom-left 1
+    pygame.Rect(square_width_8, square_height_8, square_width_8, square_height_8),  # Bottom-left 2
+    pygame.Rect(square_width_8 * 2, square_height_8, square_width_8, square_height_8),  # Bottom-right 1
+    pygame.Rect(square_width_8 * 3, square_height_8, square_width_8, square_height_8),  # Bottom-right 2
+]
 
-# Return to main menu
-def return_to_main_menu():
-    print("Returning to main menu...")
-    pygame.quit()
-    subprocess.run(["python3", "main.py"])
-    sys.exit()
 
 def display_message(text, bg_color, text_color, duration):
     screen.fill(bg_color)
     font = pygame.font.Font(None, 50)
+
+    # Manually split text into multiple lines
     lines = text.split("\n")
+
+    # Calculate vertical positioning
+    # Adjust to center text
     y_offset = SCREEN_HEIGHT // 2 - (len(lines) * 25)
+
     for i, line in enumerate(lines):
         text_surface = font.render(line, True, text_color)
+        # Space out lines
         text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, y_offset + i * 50))
         screen.blit(text_surface, text_rect)
+
+    # Update entire screen with latest changes
     pygame.display.flip()
     time.sleep(duration)
 
@@ -201,7 +220,7 @@ def display_results_table():
 
 
 # Run Game IV
-display_message("Game IV:\nPress SOFT for LIGHT RED\nPress HARD for DARK RED", WHITE, BLACK, 5)
+display_message("Game IV:\nPress SOFT for LIGHT RED\nPress HARD for DARK RED", RED, BLACK, 5)
 run_sequence("Sequence 1", 1, num_squares=4)
 display_message("Next Level", WHITE, BLACK, 2)
 run_sequence("Sequence 2", 0.5, num_squares=4)
@@ -209,6 +228,8 @@ display_message("Next Level", WHITE, BLACK, 2)
 run_sequence("Sequence 3", 1, num_squares=8)
 display_message("Next Level", WHITE, BLACK, 2)
 run_sequence("Sequence 4", 0.5, num_squares=8)
-display_message("END GAME", WHITE, BLACK, 2)
+display_message("END GAME", RED, BLACK, 2)
 display_results_table()
+
+# Instead of quitting, go back to main-menu
 return_to_main_menu()
