@@ -47,9 +47,9 @@ DARK_RED = (153, 0, 0)
 COLOR_POOL = [RED, BLUE, GREEN, PURPLE, ORANGE, YELLOW, PINK, GRAY, BROWN]
 
 # Pressure thresholds
-SOFT_PRESS_MIN = 40
-SOFT_PRESS_MAX = 100
-HARD_PRESS_MIN = 101
+SOFT_PRESS_MIN = 25
+SOFT_PRESS_MAX = 80
+HARD_PRESS_MIN = 81
 
 # Define square positions for 4 squares (first two sequences of the game - seq. 1,2)
 square_width_4 = SCREEN_WIDTH // 2
@@ -106,66 +106,62 @@ def read_pressure():
 
 def run_sequence(sequence_name, reaction_time, num_squares=4):
     correct = 0
-    iterations = 12
-    scoreable_indices = sorted(random.sample(range(iterations), 10))
-    dark_red_indices = set(random.sample(scoreable_indices, 5))
-
     squares = squares_4 if num_squares == 4 else squares_8
     square_count = len(squares)
 
-    for iteration in range(iterations):
-        if iteration in scoreable_indices:
+    challenge_indices = sorted(random.sample(range(12), 10))
+    dark_red_indices = set(random.sample(challenge_indices, k=5))
+
+    for iteration in range(12):
+        if iteration in challenge_indices:
             is_dark = iteration in dark_red_indices
-            valid_color = DARK_RED if is_dark else LIGHT_RED
-            other_colors = random.sample(COLOR_POOL, square_count - 1)
-            colors = [valid_color] + other_colors
+            red_color = DARK_RED if is_dark else LIGHT_RED
+            available_colors = [red_color] + random.sample([BLUE, GREEN, PURPLE, ORANGE, YELLOW, PINK, GRAY, BROWN], square_count - 1)
         else:
             is_dark = None
-            colors = random.sample(COLOR_POOL, square_count)
+            available_colors = random.sample([BLUE, GREEN, PURPLE, ORANGE, YELLOW, PINK, GRAY, BROWN], square_count)
 
-        random.shuffle(colors)
+        random.shuffle(available_colors)
 
-        screen.fill(BLACK) # Clear screen
-        for i in range(square_count):
-            pygame.draw.rect(screen, colors[i], squares[i])
+        # Draw the squares
+        screen.fill(BLACK)
+        for i, square in enumerate(squares):
+            pygame.draw.rect(screen, available_colors[i], square)
         pygame.display.flip()
 
-        start = time.time()
-        responded = False
+        # Track max pressure during the window
+        start_time = time.time()
+        max_pressure = 0
 
-        while time.time() - start < reaction_time:
+        while time.time() - start_time < reaction_time:
             pressure = read_pressure()
-            if pressure:
-                if is_dark is True and pressure > HARD_PRESS_MIN:
-                    correct += 1
-                    print(f"{sequence_name} - Iter {iteration+1}: DARK_RED, PRESS={pressure} ✓")
-                    responded = True
-                    break
-                elif is_dark is False and SOFT_PRESS_MIN <= pressure <= SOFT_PRESS_MAX:
-                    correct += 1
-                    print(f"{sequence_name} - Iter {iteration+1}: LIGHT_RED, PRESS={pressure} ✓")
-                    responded = True
-                    break
-                elif is_dark is not None:
-                    print(f"{sequence_name} - Iter {iteration+1}: Wrong PRESS={pressure}")
-                    responded = True
-                    break
-                else:
-                    print(f"{sequence_name} - Iter {iteration+1}: PRESS={pressure} ignored (No valid RED color shown)")
-                    responded = True
-                    break
+            if pressure > max_pressure:
+                max_pressure = pressure
+            #time.sleep(0.01)
 
-        if not responded:
-            if is_dark is not None:
-                print(f"{sequence_name} - Iter {iteration+1}: MISSED - Color was {'DARK_RED' if is_dark else 'LIGHT_RED'}")
+        # Evaluate pressure only if it was a valid challenge round
+        if is_dark is True:
+            if max_pressure > HARD_PRESS_MIN:
+                correct += 1
+                print(f"{sequence_name} - Iter {iteration+1}: DARK_RED, Max PRESS={max_pressure} - CORRECT")
             else:
-                print(f"{sequence_name} - Iter {iteration+1}: (SKIPPED) No DARK_RED or LIGHT_RED shown")
+                print(f"{sequence_name} - Iter {iteration+1}: DARK_RED, Max PRESS={max_pressure} - INCORRECT")
+        elif is_dark is False:
+            if SOFT_PRESS_MIN <= max_pressure <= SOFT_PRESS_MAX:
+                correct += 1
+                print(f"{sequence_name} - Iter {iteration+1}: LIGHT_RED, Max PRESS={max_pressure} - CORRECT")
+            else:
+                print(f"{sequence_name} - Iter {iteration+1}: LIGHT_RED, Max PRESS={max_pressure} - INCORRECT")
+        else:
+            print(f"{sequence_name} - Iter {iteration+1}: (SKIPPED) No RED shown - Max PRESS={max_pressure}")
 
+        # Pause between iterations
         screen.fill(BLACK)
         pygame.display.flip()
         time.sleep(2)
 
     results.append((sequence_name, correct))
+
 
 def display_results_table():
     screen.fill(WHITE)
